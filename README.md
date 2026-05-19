@@ -18,9 +18,9 @@ This architecture blends long-term team skill vectors (historical international 
 
 The pipeline ingests data across multiple structural historical layers. The foundational underlying data files can be compiled from the following open-source football analytics repositories:
 
-1. **International Football Results (1872 - Present):** [Kaggle Dataset by Mart Jürisoo]([https://www.kaggle.com/datasets/martjansas/international-football-results-from-1872-to-2017](https://www.kaggle.com/datasets/martj42/international-football-results-from-1872-to-2017))
+1. **International Football Results (1872 - Present):** [Kaggle Dataset by Mart Jürisoo](https://www.kaggle.com/datasets/martjansas/international-football-results-from-1872-to-2017)
    * Ingests chronological records of historical match metrics, scores, tournaments, locations, and neutral site status markers (`results.csv` and `shootouts.csv`).
-2. **World Football Elo Ratings:** [Kaggle Dataset by Ernest Wonyaya]([https://www.kaggle.com/datasets/ernestwonyaya/world-football-elo-ratings](https://www.kaggle.com/datasets/saifalnimri/international-football-elo-ratings))
+2. **World Football Elo Ratings:** [Kaggle Dataset by Ernest Wonyaya](https://www.kaggle.com/datasets/saifalnimri/international-football-elo-ratings)
    * Tracks time-series data of global relative team skill levels and chronological Elo point shifts over time (`eloratings.csv`).
 
 ---
