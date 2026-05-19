@@ -14,6 +14,17 @@ This architecture blends long-term team skill vectors (historical international 
 
 ---
 
+## 📊 Datasets & Ingestion Sources
+
+The pipeline ingests data across multiple structural historical layers. The foundational underlying data files can be compiled from the following open-source football analytics repositories:
+
+1. **International Football Results (1872 - Present):** [Kaggle Dataset by Mart Jürisoo](https://www.kaggle.com/datasets/martjansas/international-football-results-from-1872-to-2017)
+   * Ingests chronological records of historical match metrics, scores, tournaments, locations, and neutral site status markers (`results.csv` and `shootouts.csv`).
+2. **World Football Elo Ratings:** [Kaggle Dataset by Ernest Wonyaya](https://www.kaggle.com/datasets/ernestwonyaya/world-football-elo-ratings)
+   * Tracks time-series data of global relative team skill levels and chronological Elo point shifts over time (`eloratings.csv`).
+
+---
+
 ## ⚙️ Core Engineering & Architecture Highlights
 
 ### 1. Temporal Integrity & Look-Ahead Bias Prevention
@@ -23,7 +34,7 @@ To predict chronological events without contaminating the training data, team-le
 Rather than relying on volatile, single train-test splits that create overly optimistic performance metrics, the pipeline executes a full 5-Fold Cross-Validation across the entire historical data footprint. This stress-tests the algorithmic architectures across multiple data shuffles, yielding an honest, robust baseline for operational model selection.
 
 ### 3. Out-of-Sample Regulation-Compliant Simulation Engine
-The simulation framework acts as a pure, out-of-sample production inference layer. The script ingests the 48-team group stage mappings, calculates round-robin points tables, dynamically processes FIFA's complex tie-breaking regulations to extract the top 8 "Best 3rd Place" teams, and pipes them down a strict, Wikipedia-compliant knockout bracket tree to determine the world champion.
+The simulation framework acts as a pure, out-of-sample production inference layer. The script ingests the official 48-team group stage configurations, calculates round-robin points tables, dynamically processes FIFA's complex tie-breaking regulations to extract the top 8 "Best 3rd Place" teams, and pipes them down a strict, official knockout bracket tree to determine the world champion.
 
 ### 4. Interactive Group Stage Standings
 The pipeline includes logic to display the final group stage standings upon the conclusion of the group stage matches. This provides a clear view of team points, goal differences, and qualification status for the knockout rounds before proceeding to the Round of 32.
@@ -60,24 +71,24 @@ Rather than relying on generic flat lists, the knockout engine utilizes a dynami
 
 ---
 
-## 🏆 Simulation Results & Shocking Findings
+## 🏆 Simulation Results & Findings
 
-Based on our final Random Forest tournament simulation, here is how the 2026 World Cup bracket unfolded, highlighting the incredible narratives and upsets that the model predicted!
+Based on our final Random Forest tournament simulation, here is how the 2026 World Cup bracket unfolded, highlighting the predicted narratives and upsets:
 
 ### 👑 The Projected 2026 Champion
 * **Winner:** France 🇫🇷
 * **Runner-Up:** Spain 🇪🇸
-* **Story of the Tournament:** In a clash of European titans, France edged out Spain in the Grand Final to claim the 2026 World Cup title, solidifying their dominance in international football after a grueling knockout run that included defeating Germany, Brazil, and Spain in succession.
+* **Story of the Tournament:** In a clash of European titans, France edges out Spain in the Grand Final to claim the 2026 World Cup title, solidifying their dominance in international football after a grueling knockout run that includes defeating Germany, Brazil, and Spain in succession.
 
-### 🤯 Biggest Upsets & Shocking Results
-* **The Giant Killers:** The most stunning result came in the Round of 32, where tournament favorites **Belgium** were shockingly knocked out by **Cabo Verde**.
-* **Nordic Upset:** **Norway** pulled off an incredible Round of 16 victory against a stacked **Portugal** squad, cementing one of the biggest upsets of the knockout stage.
-* **Defending Champions Fall Short:** Defending champions **Argentina** had a strong run but were ultimately halted in the Semi-Finals by Spain.
+### 🤯 Major Knockout Upsets
+* **The Giant Killers:** The most stunning result comes in the Round of 32, where tournament favorites **Belgium** are shockingly knocked out by **Cabo Verde**.
+* **Nordic Upset:** **Norway** pulls off an incredible Round of 16 victory against a stacked **Portugal** squad, cementing one of the biggest upsets of the knockout stage.
+* **Defending Champions Fall Short:** Defending champions **Argentina** make a strong run but are ultimately halted in the Semi-Finals by Spain.
 
 ### 🐎 Dark Horses & Cinderella Stories
-* **Surprise Quarter-Finalists:** **Iran** made an unprecedented deep run. After advancing as a 3rd place team from Group G, they defeated Group D winners Paraguay in the Round of 32, followed by Cabo Verde in the Round of 16, before finally falling to Spain in the Quarter-Finals.
-* **Morocco Strikes Again:** Proving 2022 was no fluke, **Morocco** reached the Quarter-Finals once again, dispatching Japan and Bosnia and Herzegovina before being eliminated by the eventual champions, France.
-* **Best 3rd Place Chaos:** The expanded 48-team format proved highly volatile. Several 3rd place teams caused absolute chaos—most notably **Cabo Verde**, **Iran**, and **Norway**, who all advanced as 3rd place teams and went on to win high-stakes knockout matches against group winners!
+* **Surprise Quarter-Finalists:** **Iran** makes an unprecedented deep run. After advancing as a 3rd place team from Group G, they defeat Group D winners Paraguay in the Round of 32, followed by Cabo Verde in the Round of 16, before finally falling to Spain in the Quarter-Finals.
+* **Morocco Strikes Again:** Proving 2022 was no fluke, **Morocco** reaches the Quarter-Finals once again, dispatching Japan and Bosnia and Herzegovina before being eliminated by the eventual champions, France.
+* **Best 3rd Place Chaos:** The expanded 48-team format proves highly volatile. Several 3rd place teams cause absolute chaos—most notably **Cabo Verde**, **Iran**, and **Norway**, who all advance as 3rd place teams and win high-stakes knockout matches against group winners.
 
 ---
 
@@ -86,7 +97,7 @@ Based on our final Random Forest tournament simulation, here is how the 2026 Wor
 ├── data/
 │   ├── results.csv          # Comprehensive historical international fixtures
 │   ├── shootouts.csv        # Historic penalty shootout outcome vectors
-│   └── eloratings.csv       # Chronological international Elo points dataset
+│   ├── eloratings.csv       # Chronological international Elo points dataset
+│   └── former_names.csv     # Geopolitical country name mapping configuration
 ├── wc2026.ipynb             # Integrated prototyping, engineering & validation notebook
-├── README.md                # Project 
-```
+└── README.md                # Project documentation
