@@ -1,8 +1,10 @@
-# ⚽ FIFA World Cup 2026 Predictive Analytics & Tournament Simulation Pipeline
+# ⚽ FIFA World Cup 2026 Predictive Analytics & Operational Simulation Pipeline
 
-An end-to-end machine learning and data engineering pipeline designed to predict international football match outcomes and simulate the complete, expanded 48-team **FIFA World Cup 2026** tournament framework. 
+**Framework:** Supervised Multi-Class Classification & Rolling Time-Series Feature Engineering
 
-This architecture blends long-term team skill vectors (historical international Elo ratings) with high-frequency, short-term momentum data (rolling time-series form tracking) to map multi-class structural features to match outcomes (Home Win, Draw, Away Win).
+An end-to-end machine learning and data engineering pipeline designed to predict international football match outcomes and simulate the expanded 48-team **FIFA World Cup 2026** tournament.
+
+This architecture blends long-term team skill vectors (historical international Elo ratings) with high-frequency, short-term momentum data (rolling goal-scoring and goal-conceding form) to map engineered match features to outcomes (Home Win, Draw, Away Win).
 
 ---
 
@@ -16,88 +18,74 @@ This architecture blends long-term team skill vectors (historical international 
 
 ## 📊 Datasets & Ingestion Sources
 
-The pipeline ingests data across multiple structural historical layers. The foundational underlying data files can be compiled from the following open-source football analytics repositories:
-
 1. **International Football Results (1872 - Present):** [Kaggle Dataset by Mart Jürisoo](https://www.kaggle.com/datasets/martj42/international-football-results-from-1872-to-2017)
-   * Ingests chronological records of historical match metrics, scores, tournaments, locations, and neutral site status markers (`results.csv` and `shootouts.csv`).
+   * `results.csv` and `shootouts.csv` — chronological match metrics, scores, tournaments, and neutral-site markers.
 2. **World Football Elo Ratings:** [Kaggle Dataset by Ernest Wonyaya](https://www.kaggle.com/datasets/saifalnimri/international-football-elo-ratings)
-   * Tracks time-series data of global relative team skill levels and chronological Elo point shifts over time (`eloratings.csv`).
+   * `eloratings.csv` — time-series global team skill ratings.
+3. `former_names.csv` — geopolitical name-mapping table used to reconcile teams that have changed names over time.
 
 ---
 
 ## ⚙️ Core Engineering & Architecture Highlights
 
-### 1. Temporal Integrity & Look-Ahead Bias Prevention
-To predict chronological events without contaminating the training data, team-level momentum features (`form_5`) are engineered using a strict chronological sort and a `.shift()` window constraint. This ensures that a fixture evaluated at time $t$ only leverages performance vectors native to the historical timeline up to $t-1$. The feature space is completely sealed against future look-ahead data leakage.
+### 1. Data Cleaning & Standardization
+* `eloratings.csv` is re-decoded from `latin-1` to proper `UTF-8` to fix corrupted characters in team names before ingestion.
+* Historical name changes are reconciled with a `former → current` mapping (plus manual overrides, e.g. stripping stray non-breaking spaces and correcting the Eswatini/Swaziland split) so Elo history and match records refer to the same country consistently.
+* Rows missing scores are dropped, score columns are cast to `int`, and duplicate fixtures (same date/home/away) are removed.
+* Matches lacking a resolvable Elo rating on either side are excluded from the final training set; **Moldova** is dropped entirely due to incomplete Elo coverage.
 
-### 2. Generalization via 5-Fold Cross-Validation
-Rather than relying on volatile, single train-test splits that create overly optimistic performance metrics, the pipeline executes a full 5-Fold Cross-Validation across the entire historical data footprint. This stress-tests the algorithmic architectures across multiple data shuffles, yielding an honest, robust baseline for operational model selection.
+### 2. Temporal Integrity & Look-Ahead Bias Prevention
+Team-level momentum features are engineered using a strict chronological sort and a `.shift()` window constraint, ensuring a fixture at time $t$ only uses performance data from before $t$. The feature space is sealed against look-ahead leakage.
 
-### 3. Out-of-Sample Regulation-Compliant Simulation Engine
-The simulation framework acts as a pure, out-of-sample production inference layer. The script ingests the official 48-team group stage configurations, calculates round-robin points tables, dynamically processes FIFA's complex tie-breaking regulations to extract the top 8 "Best 3rd Place" teams, and pipes them down a strict, official knockout bracket tree to determine the world champion.
+### 3. Feature Set (7 engineered dimensions)
+The model is trained on a deliberately lean feature set:
+`elo_diff`, `neutral`, `home_form`, `away_form`, `tournament_stage`, `defensive_fragility_diff`, `offensive_dominance_diff`
 
-### 4. Interactive Group Stage Standings
-The pipeline includes logic to display the final group stage standings upon the conclusion of the group stage matches. This provides a clear view of team points, goal differences, and qualification status for the knockout rounds before proceeding to the Round of 32.
+* **`tournament_stage`** — a weighting (1.0–3.0) reflecting match importance (World Cup > continental championship > qualifier > friendly), so a team's form is contextualized by the stakes it was tested under.
+* **`defensive_fragility_diff`** / **`offensive_dominance_diff`** — rolling 5-match goals-conceded and goals-scored differentials between the two sides, replacing a simpler form metric with separate offensive and defensive signals.
+
+### 4. Sequential Round-by-Round Tournament Simulation
+The simulation is deliberately run round-by-round rather than as a single automated bracket pass: because `home_form`, `away_form`, `defensive_fragility_diff`, and `offensive_dominance_diff` are all rolling features, each round's matches are predicted only *after* the previous round's results are known, so those rolling windows genuinely update between rounds instead of using stale pre-tournament form for the whole bracket. Each round (Group Matchdays 1–3 → Round of 32 → Round of 16 → Quarter-Finals → Semi-Finals → Final) is run as its own matchup list against the trained Random Forest's `predict_proba` output, with winners fed forward into the next round's matchup list by hand. There is no automated group-standings or FIFA tie-break resolver in the current notebook.
 
 ---
 
-## 📊 Model Evaluation & Deep-Dive Trade-offs
+## 📈 Model Evaluation & Trade-offs
 
-### The Train-Test Split Trap vs. Cross-Validation Truth
-During initial prototyping on an isolated 80/20 partition, the models showed conflicting signals. However, subjecting the pipeline to a 5-Fold Cross-Validation stress test revealed the true performance metrics:
+### Holdout Split vs. 5-Fold Cross-Validation
 
-| Predictive Model Configuration | Single Holdout Split Score | 5-Fold Cross-Validation Mean | Model Generalization Status |
+| Predictive Model Configuration | Single Holdout Score | 5-Fold Cross-Validation Mean | Status |
 | :--- | :---: | :---: | :--- |
-| **XGBoost Classifier** | 54.19% | **49.99% (+/- 2.43%)** | Overfitted on Partition Noise |
-| **Random Forest Ensemble** | 52.51% | **53.03% (+/- 2.32%)** | **Operational Champion (Stable)** |
+| **Random Forest Ensemble** | 64.46% | **63.36% (+/- 0.84%)** | **Operational Champion** |
+| **XGBoost Classifier** | 61.12% | **59.68% (+/- 1.25%)** | Competitive, more variance |
 
 ### Algorithmic Insight
-Because the feature space is optimized and highly focused (6 dimensions including Elo deltas and lagged form weights), the gradient boosting mechanisms within **XGBoost** over-indexed on localized variance, causing its accuracy to collapse to a coin-flip (~50%) across unseen folds. 
+With the richer 7-feature set (particularly the added offensive/defensive rolling differentials), both models improved substantially over earlier iterations — XGBoost in particular is no longer collapsing to a near coin-flip on unseen folds.
 
-Conversely, the **Random Forest** classifier's bootstrap aggregation (bagging) framework stabilized predictions by averaging uncorrelated decision trees. This design choice provided a crucial mathematical shock absorber against the high-entropy anomalies and historical upsets native to international sports analytics.
-
-### Error Analysis via Confusion Matrices
-Multi-class confusion matrices generated via `Seaborn` highlighted a standard domain obstacle in football analytics: the **Draw Penalty**. 
-
-While both models displayed exceptional precision when isolating clean Home Wins (benefiting from historical home-field advantage metrics) and clear Away Wins, the models frequently misclassified actual draws as Home Wins. This is because draws in international football represent high-entropy chaos (e.g., late equalizers, red cards, missed penalties) that mathematical features alone struggle to resolve, establishing a natural performance ceiling right around the ~53% boundary.
+The **Random Forest**'s higher headline accuracy comes with a notable trade-off, visible in the classification report: it achieves 0% precision and recall on the **Draw** class — it essentially never predicts a draw, funneling every match into Home or Away Win. **XGBoost**, by contrast, still attempts to classify draws (27% precision / 15% recall on that class), which costs it some overall accuracy but gives more balanced coverage across all three outcomes. This is the same underlying "Draw Penalty" pattern in international football: draws are driven by high-entropy events (late equalizers, red cards, missed penalties) that structural features alone struggle to resolve.
 
 ---
 
-## 📈 Tournament Bracket Handoff Simulation
+## 🏆 Simulation Results
 
-The operational Random Forest model was deployed to run a fully deterministic simulation of the upcoming 2026 World Cup tree. 
+The trained Random Forest model was run through the sequential round predictor described above. The most recent saved run in the notebook reaches:
 
-Rather than relying on generic flat lists, the knockout engine utilizes a dynamic positional dictionary tracking true bracket connectivity constraints. It maps official group positions (e.g., Runner-up Group A vs. Runner-up Group B) and match index keying down to the Grand Final, resolving high-stakes knockout draws by analyzing raw probability distributions (`predict_proba`) and historical Elo deadlocks to simulate penalty shootouts.
+* **Predicted Final:** Spain vs. Argentina
+* **Model Probabilities:** Spain 42.6% · Draw 16.9% · Argentina 40.6%
+* **Predicted Winner:** Spain — but by an extremely narrow margin, with the model itself flagging the match as close to a toss-up.
 
----
-
-## 🏆 Simulation Results & Findings
-
-Based on our final Random Forest tournament simulation, here is how the 2026 World Cup bracket unfolded, highlighting the predicted narratives and upsets:
-
-### 👑 The Projected 2026 Champion
-* **Winner:** France 🇫🇷
-* **Runner-Up:** Spain 🇪🇸
-* **Story of the Tournament:** In a clash of European titans, France edges out Spain in the Grand Final to claim the 2026 World Cup title, solidifying their dominance in international football after a grueling knockout run that includes defeating Germany, Brazil, and Spain in succession.
-
-### 🤯 Major Knockout Upsets
-* **The Giant Killers:** The most stunning result comes in the Round of 32, where tournament favorites **Belgium** are shockingly knocked out by **Cabo Verde**.
-* **Nordic Upset:** **Norway** pulls off an incredible Round of 16 victory against a stacked **Portugal** squad, cementing one of the biggest upsets of the knockout stage.
-* **Defending Champions Fall Short:** Defending champions **Argentina** make a strong run but are ultimately halted in the Semi-Finals by Spain.
-
-### 🐎 Dark Horses & Cinderella Stories
-* **Surprise Quarter-Finalists:** **Iran** makes an unprecedented deep run. After advancing as a 3rd place team from Group G, they defeat Group D winners Paraguay in the Round of 32, followed by Cabo Verde in the Round of 16, before finally falling to Spain in the Quarter-Finals.
-* **Morocco Strikes Again:** Proving 2022 was no fluke, **Morocco** reaches the Quarter-Finals once again, dispatching Japan and Bosnia and Herzegovina before being eliminated by the eventual champions, France.
-* **Best 3rd Place Chaos:** The expanded 48-team format proves highly volatile. Several 3rd place teams cause absolute chaos—most notably **Cabo Verde**, **Iran**, and **Norway**, who all advance as 3rd place teams and win high-stakes knockout matches against group winners.
+Predictions for each round are written out to `predictions_log/final_predictions.csv`. Intermediate-round matchups (group stage through the semi-finals) are present in the notebook as hand-entered matchup lists, each run only after the prior round so its rolling-form features reflect real tournament results — but their prediction outputs weren't retained in this saved run, so only the Final result above is currently reproducible from the notebook as-is.
 
 ---
 
 ## 🚀 Pipeline Directory Structure
 ```text
 ├── data/
-│   ├── results.csv          # Comprehensive historical international fixtures
-│   ├── shootouts.csv        # Historic penalty shootout outcome vectors
-│   ├── eloratings.csv       # Chronological international Elo points dataset
-│   └── former_names.csv     # Geopolitical country name mapping configuration
-├── wc2026.ipynb             # Integrated prototyping, engineering & validation notebook
-└── README.md                # Project documentation
+│   ├── results.csv          # Historical international fixtures
+│   ├── shootouts.csv        # Historic penalty shootout outcomes
+│   ├── eloratings.csv       # Chronological international Elo ratings
+│   └── former_names.csv     # Geopolitical country name mapping
+├── predictions_log/
+│   └── final_predictions.csv # Output of the round-by-round simulation
+├── wc2026.ipynb              # Integrated prototyping, engineering & validation notebook
+└── README.md                 # Project documentation
+```
