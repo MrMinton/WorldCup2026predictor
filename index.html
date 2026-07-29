@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Cup 2026 · Prediction vs Reality</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B1210;
+  --surface:#121C17;
+  --surface-2:#17241E;
+  --border:rgba(237,233,221,0.10);
+  --border-strong:rgba(237,233,221,0.18);
+  --ivory:#EDE9DD;
+  --muted:#8B9690;
+  --pitch:#35B267;
+  --pitch-dim:#1F5F3B;
+  --gold:#D9A94E;
+  --miss:#C15C4A;
+  --font-display:'Big Shoulders Display', sans-serif;
+  --font-body:'Inter', sans-serif;
+  --font-mono:'IBM Plex Mono', monospace;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--ivory);
+  font-family:var(--font-body);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--pitch);}
+.wrap{max-width:1040px; margin:0 auto; padding:0 24px;}
+
+/* ---------- Hero / scoreboard ---------- */
+.hero{
+  padding:64px 0 40px;
+  border-bottom:1px solid var(--border);
+  background:
+    radial-gradient(ellipse 900px 400px at 50% -10%, rgba(53,178,103,0.12), transparent 70%);
+}
+.eyebrow{
+  font-family:var(--font-mono);
+  font-size:12px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--muted);
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.eyebrow::before{content:''; width:8px; height:8px; border-radius:50%; background:var(--pitch); display:inline-block;}
+.scoreboard{
+  margin-top:28px;
+  display:flex;
+  align-items:baseline;
+  justify-content:center;
+  gap:28px;
+  flex-wrap:wrap;
+  text-align:center;
+}
+.team{
+  font-family:var(--font-display);
+  font-weight:800;
+  font-size:clamp(28px,5vw,44px);
+  letter-spacing:0.01em;
+}
+.team.winner{color:var(--ivory);}
+.team.loser{color:var(--muted);}
+.score{
+  font-family:var(--font-display);
+  font-weight:800;
+  font-size:clamp(48px,9vw,84px);
+  line-height:1;
+  color:var(--gold);
+  display:flex;
+  align-items:baseline;
+  gap:14px;
+}
+.aet{
+  font-family:var(--font-mono);
+  font-size:13px;
+  color:var(--muted);
+  align-self:flex-end;
+  margin-bottom:10px;
+  letter-spacing:0.08em;
+}
+.callout{
+  margin-top:22px;
+  display:flex;
+  justify-content:center;
+}
+.badge-correct{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  background:rgba(217,169,78,0.12);
+  border:1px solid rgba(217,169,78,0.35);
+  color:var(--gold);
+  font-family:var(--font-mono);
+  font-size:13px;
+  padding:7px 14px;
+  border-radius:100px;
+}
+
+/* prediction split bar */
+.predict-panel{
+  max-width:520px;
+  margin:32px auto 0;
+}
+.predict-label{
+  font-family:var(--font-mono);
+  font-size:12px;
+  color:var(--muted);
+  text-align:center;
+  margin-bottom:10px;
+}
+.split-bar{
+  display:flex;
+  height:34px;
+  border-radius:6px;
+  overflow:hidden;
+  border:1px solid var(--border-strong);
+}
+.split-seg{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:var(--font-mono);
+  font-size:12px;
+  color:var(--bg);
+  font-weight:500;
+}
+.seg-spain{background:var(--pitch);}
+.seg-draw{background:#4A5750; color:var(--ivory);}
+.seg-argentina{background:#6E7A73; color:var(--ivory);}
+
+/* ---------- KPI strip ---------- */
+.kpis{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1px;
+  background:var(--border);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+.kpi{
+  background:var(--bg);
+  padding:28px 24px;
+  text-align:center;
+}
+.kpi-value{
+  font-family:var(--font-mono);
+  font-size:clamp(26px,4vw,36px);
+  font-weight:500;
+  color:var(--pitch);
+}
+.kpi-label{
+  font-size:13px;
+  color:var(--muted);
+  margin-top:6px;
+}
+
+/* ---------- Sections ---------- */
+section{padding:56px 0;}
+.section-head{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:24px;
+  flex-wrap:wrap;
+}
+.section-title{
+  font-family:var(--font-display);
+  font-weight:800;
+  font-size:clamp(24px,3.4vw,32px);
+  letter-spacing:0.005em;
+}
+.section-note{
+  font-size:13px;
+  color:var(--muted);
+  max-width:340px;
+}
+
+/* form guide chart */
+.chart-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:24px;
+}
+#roundChart{max-height:280px;}
+
+/* round pills */
+.round-pills{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:20px;
+}
+.pill{
+  font-family:var(--font-mono);
+  font-size:12px;
+  padding:8px 14px;
+  border-radius:100px;
+  border:1px solid var(--border-strong);
+  background:var(--surface);
+  color:var(--muted);
+  cursor:pointer;
+  transition:all .15s ease;
+  white-space:nowrap;
+}
+.pill:hover{border-color:var(--pitch); color:var(--ivory);}
+.pill.active{background:var(--pitch-dim); border-color:var(--pitch); color:var(--ivory);}
+
+/* match table */
+.match-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+}
+.match-table th{
+  text-align:left;
+  font-family:var(--font-mono);
+  font-size:11px;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  color:var(--muted);
+  font-weight:400;
+  padding:0 12px 10px;
+  border-bottom:1px solid var(--border-strong);
+}
+.match-table td{
+  padding:12px;
+  border-bottom:1px solid var(--border);
+  vertical-align:middle;
+}
+.match-table tr:last-child td{border-bottom:none;}
+.matchup{font-weight:500;}
+.probs{
+  font-family:var(--font-mono);
+  font-size:12px;
+  color:var(--muted);
+}
+.tag{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:24px; height:24px;
+  border-radius:50%;
+  font-size:13px;
+  font-weight:600;
+}
+.tag.correct{background:rgba(53,178,103,0.15); color:var(--pitch);}
+.tag.miss{background:rgba(193,92,74,0.15); color:var(--miss);}
+.empty-state{
+  background:var(--surface);
+  border:1px dashed var(--border-strong);
+  border-radius:12px;
+  padding:32px 24px;
+  text-align:center;
+  color:var(--muted);
+  font-size:14px;
+}
+.empty-state strong{color:var(--ivory); display:block; font-family:var(--font-mono); font-size:20px; margin-bottom:8px;}
+
+/* footer */
+footer{
+  border-top:1px solid var(--border);
+  padding:32px 0 48px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:16px;
+  font-size:13px;
+  color:var(--muted);
+}
+.stack{font-family:var(--font-mono); font-size:12px;}
+
+@media (max-width:600px){
+  .kpis{grid-template-columns:1fr;}
+  footer{flex-direction:column; align-items:flex-start;}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">FIFA World Cup 2026 · Final, July 19 · MetLife Stadium</p>
+    <div class="scoreboard">
+      <span class="team winner">Spain</span>
+      <span class="score">1<span style="color:var(--muted); font-size:0.6em;">–</span>0<span class="aet">AET</span></span>
+      <span class="team loser">Argentina</span>
+    </div>
+    <div class="callout">
+      <span class="badge-correct">✓ Model predicted this exact final, and the winner</span>
+    </div>
+    <div class="predict-panel">
+      <p class="predict-label">Pre-match model probabilities</p>
+      <div class="split-bar">
+        <div class="split-seg seg-spain" style="width:42.6%;">Spain 42.6%</div>
+        <div class="split-seg seg-draw" style="width:16.9%;">17%</div>
+        <div class="split-seg seg-argentina" style="width:40.6%;">Argentina 40.6%</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="kpis">
+  <div class="kpi">
+    <div class="kpi-value">89.16%</div>
+    <div class="kpi-label">Accuracy on decisive matches</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value">71.84%</div>
+    <div class="kpi-label">Overall, including draws</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value">103</div>
+    <div class="kpi-label">Matches tracked, Round 1 → Final</div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <section id="form-guide">
+    <div class="section-head">
+      <h2 class="section-title">Form guide</h2>
+      <p class="section-note">Decisive-match accuracy by round, tracked in real time as the tournament progressed.</p>
+    </div>
+    <div class="chart-card">
+      <canvas id="roundChart" role="img" aria-label="Bar chart of decisive-match prediction accuracy by round: Round 1 80%, Round 2 94.7%, Round 3 88.9%, Round of 32 75%, Round of 16 75% pending confirmation, Quarter-Finals 100%, Semi-Finals 100%, Final 100%.">
+        Round-by-round accuracy: Round 1 80%, Round 2 94.7%, Round 3 88.9%, Round of 32 75%, Round of 16 87.5% (per original notes, pending re-check), Quarter-Finals 100%, Semi-Finals 100%, Final 100%.
+      </canvas>
+    </div>
+  </section>
+
+  <section id="explorer">
+    <div class="section-head">
+      <h2 class="section-title">Round by round</h2>
+      <p class="section-note">Predicted outcome vs what actually happened, match by match.</p>
+    </div>
+
+    <div class="round-pills" id="roundPills"></div>
+    <div id="tableHost"></div>
+
+  </section>
+
+</main>
+
+<footer class="wrap">
+  <span>Random Forest classifier · 7 engineered features · 5-fold cross-validated</span>
+  <span class="stack">Python · Pandas · Scikit-Learn · XGBoost</span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+/* =========================================================================
+   DATA
+   -------------------------------------------------------------------------
+   round.matches: fill in "actual" for every match once you've logged the
+   real result, then the round automatically switches from the aggregate
+   placeholder to the full match table. Leave "actual: null" for matches
+   not yet confirmed.
+
+   NOTE: the Quarter-Finals matchup below is logged as "Argentina vs
+   Switzerland", but the Round of 16 log has Colombia (not Switzerland)
+   beating Switzerland to get there. One of those two entries has a typo --
+   worth a quick fix in the source data when you get a chance.
+========================================================================= */
+const rounds = [
+  {
+    key: 'r1', label: 'Round 1', accuracy: 80, fraction: '12/15',
+    matches: [
+      {home:'Mexico', away:'South Africa', predicted:'Mexico', probs:'73.3 / 17.7 / 9.1', actual:'Mexico'},
+      {home:'South Korea', away:'Czechia', predicted:'South Korea', probs:'46.7 / 24.4 / 29.0', actual:'South Korea'},
+      {home:'Canada', away:'Bosnia and Herzegovina', predicted:'Canada', probs:'63.2 / 20.3 / 16.5', actual:'Draw'},
+      {home:'United States', away:'Paraguay', predicted:'United States', probs:'36.6 / 27.1 / 36.3', actual:'United States'},
+      {home:'Qatar', away:'Switzerland', predicted:'Switzerland', probs:'13.9 / 15.0 / 71.1', actual:'Draw'},
+      {home:'Brazil', away:'Morocco', predicted:'Brazil', probs:'50.2 / 21.3 / 28.5', actual:'Draw'},
+      {home:'Haiti', away:'Scotland', predicted:'Scotland', probs:'28.6 / 25.0 / 46.4', actual:'Scotland'},
+      {home:'Australia', away:'Turkey', predicted:'Turkey', probs:'23.6 / 22.9 / 53.6', actual:'Australia'},
+      {home:'Germany', away:'Curacao', predicted:'Germany', probs:'81.6 / 12.4 / 6.0', actual:'Germany'},
+      {home:'Netherlands', away:'Japan', predicted:'Netherlands', probs:'48.3 / 20.6 / 31.1', actual:'Draw'},
+      {home:'Ivory Coast', away:'Ecuador', predicted:'Ecuador', probs:'26.4 / 22.3 / 51.3', actual:'Ivory Coast'},
+      {home:'Sweden', away:'Tunisia', predicted:'Sweden', probs:'43.8 / 22.6 / 33.5', actual:'Sweden'},
+      {home:'Spain', away:'Cape Verde', predicted:'Spain', probs:'69.5 / 16.5 / 14.0', actual:'Draw'},
+      {home:'Belgium', away:'Egypt', predicted:'Belgium', probs:'61.5 / 19.6 / 19.0', actual:'Draw'},
+      {home:'Saudi Arabia', away:'Uruguay', predicted:'Uruguay', probs:'21.5 / 24.9 / 53.5', actual:'Draw'},
+      {home:'Iran', away:'New Zealand', predicted:'Iran', probs:'65.9 / 20.5 / 13.7', actual:'Draw'},
+      {home:'France', away:'Senegal', predicted:'France', probs:'65.1 / 16.8 / 18.0', actual:'France'},
+      {home:'Iraq', away:'Norway', predicted:'Norway', probs:'23.8 / 21.3 / 54.9', actual:'Norway'},
+      {home:'Argentina', away:'Algeria', predicted:'Argentina', probs:'69.8 / 14.4 / 15.7', actual:'Argentina'},
+      {home:'Austria', away:'Jordan', predicted:'Austria', probs:'61.3 / 21.9 / 16.8', actual:'Austria'},
+      {home:'Portugal', away:'Democratic Republic of Congo', predicted:'Portugal', probs:'61.5 / 19.6 / 18.9', actual:'Draw'},
+      {home:'England', away:'Croatia', predicted:'England', probs:'55.1 / 22.6 / 22.3', actual:'England'},
+      {home:'Ghana', away:'Panama', predicted:'Panama', probs:'22.5 / 24.3 / 53.3', actual:'Ghana'},
+      {home:'Uzbekistan', away:'Colombia', predicted:'Colombia', probs:'28.9 / 22.8 / 48.3', actual:'Colombia'},
+    ]
+  },
+  {
+    key: 'r2', label: 'Round 2', accuracy: 94.7, fraction: '18/19',
+    matches: [
+      {home:'Czechia', away:'South Africa', predicted:'Czechia', probs:'64.0 / 21.3 / 14.7', actual:'Draw'},
+      {home:'Switzerland', away:'Bosnia and Herzegovina', predicted:'Switzerland', probs:'56.8 / 21.6 / 21.5', actual:'Switzerland'},
+      {home:'Canada', away:'Qatar', predicted:'Canada', probs:'80.9 / 13.6 / 5.5', actual:'Canada'},
+      {home:'Mexico', away:'South Korea', predicted:'Mexico', probs:'59.9 / 22.9 / 17.2', actual:'Mexico'},
+      {home:'United States', away:'Australia', predicted:'United States', probs:'38.8 / 26.4 / 34.8', actual:'United States'},
+      {home:'Scotland', away:'Morocco', predicted:'Morocco', probs:'35.4 / 20.6 / 43.9', actual:'Morocco'},
+      {home:'Brazil', away:'Haiti', predicted:'Brazil', probs:'63.9 / 19.6 / 16.5', actual:'Brazil'},
+      {home:'Turkey', away:'Paraguay', predicted:'Turkey', probs:'57.8 / 19.6 / 22.6', actual:'Paraguay'},
+      {home:'Netherlands', away:'Sweden', predicted:'Netherlands', probs:'59.1 / 20.9 / 20.0', actual:'Netherlands'},
+      {home:'Germany', away:'Ivory Coast', predicted:'Germany', probs:'64.0 / 16.7 / 19.3', actual:'Germany'},
+      {home:'Ecuador', away:'Curacao', predicted:'Ecuador', probs:'77.8 / 15.3 / 6.9', actual:'Draw'},
+      {home:'Tunisia', away:'Japan', predicted:'Japan', probs:'13.1 / 20.2 / 66.7', actual:'Japan'},
+      {home:'Spain', away:'Saudi Arabia', predicted:'Spain', probs:'76.2 / 15.7 / 8.1', actual:'Spain'},
+      {home:'Belgium', away:'Iran', predicted:'Belgium', probs:'59.5 / 19.6 / 20.9', actual:'Draw'},
+      {home:'Uruguay', away:'Cape Verde', predicted:'Uruguay', probs:'60.3 / 21.8 / 17.9', actual:'Draw'},
+      {home:'New Zealand', away:'Egypt', predicted:'Egypt', probs:'18.4 / 24.7 / 56.9', actual:'Egypt'},
+      {home:'Argentina', away:'Austria', predicted:'Argentina', probs:'64.1 / 17.7 / 18.2', actual:'Argentina'},
+      {home:'France', away:'Iraq', predicted:'France', probs:'68.3 / 17.5 / 14.2', actual:'France'},
+      {home:'Norway', away:'Senegal', predicted:'Norway', probs:'55.3 / 21.9 / 22.8', actual:'Norway'},
+      {home:'Jordan', away:'Algeria', predicted:'Algeria', probs:'18.4 / 24.2 / 57.4', actual:'Algeria'},
+      {home:'Portugal', away:'Uzbekistan', predicted:'Portugal', probs:'67.6 / 18.5 / 13.9', actual:'Portugal'},
+      {home:'England', away:'Ghana', predicted:'England', probs:'79.9 / 13.9 / 6.2', actual:'Draw'},
+      {home:'Panama', away:'Croatia', predicted:'Croatia', probs:'25.2 / 23.5 / 51.3', actual:'Croatia'},
+      {home:'Colombia', away:'Democratic Republic of Congo', predicted:'Colombia', probs:'66.3 / 19.4 / 14.3', actual:'Colombia'},
+    ]
+  },
+  {
+    key: 'r3', label: 'Round 3', accuracy: 88.9, fraction: '16/18',
+    matches: [
+      {home:'Czechia', away:'Mexico', predicted:'Mexico', probs:'19.1 / 26.6 / 54.4', actual:'Mexico'},
+      {home:'South Africa', away:'South Korea', predicted:'South Korea', probs:'23.9 / 24.1 / 52.0', actual:'South Africa'},
+      {home:'Switzerland', away:'Canada', predicted:'Switzerland', probs:'50.4 / 23.3 / 26.4', actual:'Switzerland'},
+      {home:'Bosnia and Herzegovina', away:'Qatar', predicted:'Bosnia and Herzegovina', probs:'63.9 / 19.8 / 16.3', actual:'Bosnia and Herzegovina'},
+      {home:'Scotland', away:'Brazil', predicted:'Brazil', probs:'27.7 / 23.2 / 49.0', actual:'Brazil'},
+      {home:'Morocco', away:'Haiti', predicted:'Morocco', probs:'73.7 / 16.7 / 9.6', actual:'Morocco'},
+      {home:'Turkey', away:'United States', predicted:'Turkey', probs:'47.6 / 21.5 / 30.9', actual:'Turkey'},
+      {home:'Paraguay', away:'Australia', predicted:'Paraguay', probs:'42.5 / 23.0 / 34.6', actual:'Draw'},
+      {home:'Ecuador', away:'Germany', predicted:'Germany', probs:'28.2 / 25.3 / 46.5', actual:'Ecuador'},
+      {home:'Curacao', away:'Ivory Coast', predicted:'Ivory Coast', probs:'11.2 / 16.7 / 72.1', actual:'Ivory Coast'},
+      {home:'Tunisia', away:'Netherlands', predicted:'Netherlands', probs:'10.6 / 20.0 / 69.4', actual:'Netherlands'},
+      {home:'Japan', away:'Sweden', predicted:'Japan', probs:'62.0 / 18.4 / 19.6', actual:'Draw'},
+      {home:'New Zealand', away:'Belgium', predicted:'Belgium', probs:'12.4 / 21.6 / 66.0', actual:'Belgium'},
+      {home:'Egypt', away:'Iran', predicted:'Iran', probs:'36.8 / 24.9 / 38.3', actual:'Draw'},
+      {home:'Uruguay', away:'Spain', predicted:'Spain', probs:'14.4 / 22.5 / 63.1', actual:'Spain'},
+      {home:'Cape Verde', away:'Saudi Arabia', predicted:'Cape Verde', probs:'45.2 / 25.5 / 29.3', actual:'Draw'},
+      {home:'Norway', away:'France', predicted:'France', probs:'29.3 / 23.9 / 46.8', actual:'France'},
+      {home:'Senegal', away:'Iraq', predicted:'Senegal', probs:'65.8 / 19.4 / 14.7', actual:'Senegal'},
+      {home:'Jordan', away:'Argentina', predicted:'Argentina', probs:'6.6 / 11.0 / 82.5', actual:'Argentina'},
+      {home:'Algeria', away:'Austria', predicted:'Austria', probs:'35.8 / 22.9 / 41.3', actual:'Draw'},
+      {home:'Colombia', away:'Portugal', predicted:'Colombia', probs:'42.4 / 23.3 / 34.3', actual:'Draw'},
+      {home:'Democratic Republic of Congo', away:'Uzbekistan', predicted:'Democratic Republic of Congo', probs:'43.9 / 24.2 / 31.9', actual:'Democratic Republic of Congo'},
+      {home:'Panama', away:'England', predicted:'England', probs:'17.6 / 21.0 / 61.5', actual:'England'},
+      {home:'Croatia', away:'Ghana', predicted:'Croatia', probs:'68.4 / 18.5 / 13.1', actual:'Croatia'},
+    ]
+  },
+  {
+    key: 'r32', label: 'Round of 32', accuracy: 87.5, fraction: '14/16',
+    matches: [
+      {home:'Canada', away:'South Africa', predicted:'Canada', probs:'71.4 / 18.3 / 10.3', actual:'Canada'},
+      {home:'Brazil', away:'Japan', predicted:'Brazil', probs:'47.8 / 18.0 / 34.1', actual:'Brazil'},
+      {home:'Paraguay', away:'Germany', predicted:'Germany', probs:'26.4 / 23.3 / 50.3', actual:'Paraguay'},
+      {home:'Morocco', away:'Netherlands', predicted:'Netherlands', probs:'32.2 / 21.9 / 45.9', actual:'Morocco'},
+      {home:'Norway', away:'Ivory Coast', predicted:'Norway', probs:'64.8 / 15.2 / 19.9', actual:'Norway'},
+      {home:'France', away:'Sweden', predicted:'France', probs:'71.4 / 14.7 / 13.9', actual:'France'},
+      {home:'Mexico', away:'Ecuador', predicted:'Mexico', probs:'52.1 / 20.5 / 27.4', actual:'Mexico'},
+      {home:'England', away:'Democratic Republic of Congo', predicted:'England', probs:'71.3 / 15.9 / 12.8', actual:'England'},
+      {home:'Belgium', away:'Senegal', predicted:'Belgium', probs:'52.4 / 19.8 / 27.8', actual:'Belgium'},
+      {home:'United States', away:'Bosnia and Herzegovina', predicted:'United States', probs:'68.9 / 18.4 / 12.7', actual:'United States'},
+      {home:'Spain', away:'Austria', predicted:'Spain', probs:'59.5 / 19.4 / 21.1', actual:'Spain'},
+      {home:'Portugal', away:'Croatia', predicted:'Portugal', probs:'62.6 / 18.6 / 18.8', actual:'Portugal'},
+      {home:'Switzerland', away:'Algeria', predicted:'Switzerland', probs:'57.2 / 18.4 / 24.4', actual:'Switzerland'},
+      {home:'Egypt', away:'Australia', predicted:'Australia', probs:'35.3 / 24.7 / 40.0', actual:'Australia'},
+      {home:'Argentina', away:'Cape Verde', predicted:'Argentina', probs:'78.1 / 12.2 / 9.7', actual:'Argentina'},
+      {home:'Colombia', away:'Ghana', predicted:'Colombia', probs:'72.3 / 16.3 / 11.4', actual:'Colombia'},
+    ]
+  },
+  {
+    key: 'r16', label: 'Round of 16', accuracy: 87.5, fraction: '7/8',
+    matches: [
+      {home:'Morocco', away:'Canada', predicted:'Morocco', probs:'50.8 / 22.9 / 26.4', actual:'Morocco'},
+      {home:'France', away:'Paraguay', predicted:'France', probs:'68.9 / 17.3 / 13.9', actual:'France'},
+      {home:'Norway', away:'Brazil', predicted:'Brazil', probs:'31.4 / 24.7 / 43.9', actual:'Norway'},
+      {home:'England', away:'Mexico', predicted:'England', probs:'51.0 / 20.9 / 28.1', actual:'England'},
+      {home:'Spain', away:'Portugal', predicted:'Spain', probs:'52.1 / 23.1 / 24.8', actual:'Spain'},
+      {home:'Belgium', away:'United States', predicted:'Belgium', probs:'50.5 / 20.9 / 28.6', actual:'Belgium'},
+      {home:'Argentina', away:'Egypt', predicted:'Argentina', probs:'75.5 / 12.8 / 11.6', actual:'Argentina'},
+      {home:'Switzerland', away:'Colombia', predicted:'Colombia', probs:'28.8 / 22.1 / 49.1', actual:'Colombia'},
+    ]
+  },
+  {
+    key:'qf', label:'Quarter-Finals', accuracy:100, fraction:'4/4',
+    matches:[
+      {home:'France', away:'Morocco', predicted:'France', probs:'71.0 / 14.8 / 14.2', actual:'France'},
+      {home:'Spain', away:'Belgium', predicted:'Spain', probs:'61.8 / 18.0 / 20.2', actual:'Spain'},
+      {home:'England', away:'Norway', predicted:'England', probs:'51.7 / 18.3 / 30.1', actual:'England'},
+      {home:'Argentina', away:'Switzerland', predicted:'Argentina', probs:'69.5 / 13.8 / 16.7', actual:'Argentina'},
+    ]
+  },
+  {
+    key:'sf', label:'Semi-Finals', accuracy:100, fraction:'2/2',
+    matches:[
+      {home:'France', away:'Spain', predicted:'Spain', probs:'36.7 / 19.7 / 43.5', actual:'Spain'},
+      {home:'England', away:'Argentina', predicted:'Argentina', probs:'32.8 / 19.6 / 47.6', actual:'Argentina'},
+    ]
+  },
+  {
+    key:'final', label:'Final', accuracy:100, fraction:'1/1',
+    matches:[
+      {home:'Spain', away:'Argentina', predicted:'Spain', probs:'42.6 / 16.9 / 40.6', actual:'Spain'},
+    ]
+  },
+];
+
+/* ---------- Form guide chart ---------- */
+new Chart(document.getElementById('roundChart'), {
+  type:'bar',
+  data:{
+    labels: rounds.map(r=>r.label),
+    datasets:[{
+      data: rounds.map(r=>r.accuracy),
+      backgroundColor:'#35B267',
+      borderRadius:4,
+      maxBarThickness:34
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false},
+      tooltip:{ callbacks:{ label:(ctx)=> rounds[ctx.dataIndex].fraction + ' correct' } } },
+    scales:{
+      y:{ beginAtZero:true, max:100, ticks:{ callback:v=>v+'%', color:'#8B9690' }, grid:{ color:'rgba(237,233,221,0.08)' } },
+      x:{ ticks:{ color:'#8B9690', font:{family:'IBM Plex Mono', size:11} }, grid:{ display:false } }
+    }
+  }
+});
+
+/* ---------- Round explorer ---------- */
+const pillHost = document.getElementById('roundPills');
+const tableHost = document.getElementById('tableHost');
+
+function renderRound(key){
+  const round = rounds.find(r=>r.key===key);
+  document.querySelectorAll('.pill').forEach(p=>p.classList.toggle('active', p.dataset.key===key));
+
+  if(!round.matches){
+    tableHost.innerHTML = `
+      <div class="empty-state">
+        <strong>${round.fraction} correct (${round.accuracy}%)</strong>
+        Match-level detail for ${round.label} hasn't been logged yet — only the round total is confirmed so far.
+      </div>`;
+    return;
+  }
+
+  const rows = round.matches.map(m=>{
+    const hasActual = m.actual !== null && m.actual !== undefined;
+    const correct = hasActual && m.actual === m.predicted;
+    const tag = !hasActual
+      ? `<span class="probs">pending</span>`
+      : correct
+        ? `<span class="tag correct">✓</span>`
+        : `<span class="tag miss">✕</span>`;
+    return `
+      <tr>
+        <td class="matchup">${m.home} vs ${m.away}</td>
+        <td>${m.predicted}</td>
+        <td class="probs">${m.probs}</td>
+        <td>${hasActual ? m.actual : '<span class="probs">—</span>'}</td>
+        <td>${tag}</td>
+      </tr>`;
+  }).join('');
+
+  tableHost.innerHTML = `
+    <div class="chart-card" style="overflow-x:auto;">
+      <table class="match-table">
+        <thead>
+          <tr>
+            <th>Matchup</th>
+            <th>Predicted</th>
+            <th>Probabilities (H / D / A)</th>
+            <th>Actual</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+pillHost.innerHTML = rounds.map(r=>`<button class="pill" data-key="${r.key}">${r.label} · ${r.fraction}</button>`).join('');
+pillHost.querySelectorAll('.pill').forEach(p=>p.addEventListener('click', ()=>renderRound(p.dataset.key)));
+renderRound('final');
+</script>
+
+</body>
+</html>
